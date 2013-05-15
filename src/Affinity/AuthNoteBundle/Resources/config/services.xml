@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services 
+    http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="auth_note.user.class">Affinity\SimpleAuth\AuthManager</parameter>
+        <parameter key="auth_note.user_factory.class">Affinity\AuthNoteBundle\Factory\UserFactory</parameter>
+        <parameter key="auth_note.route_loader.class">Affinity\AuthNoteBundle\Service\RouteLoader</parameter>
+        <parameter key="auth_note.auth_manager.class">Affinity\SimpleAuth\AuthManager</parameter>
+        <parameter key="auth_note.auth_context.class">Affinity\SimpleAuth\AuthContext</parameter>
+        <parameter key="auth_note.auth_decisions.object_decision.class">Affinity\SimpleAuth\Generic\Decision\ObjectDecision</parameter>
+        <parameter key="auth_note.auth_decisions.string_decision.class">Affinity\SimpleAuth\Generic\Decision\StringDecision</parameter>
+    </parameters>
+    
+    <services>        
+        <!-- Route Loader.  Allows for dynamic loading of routes from this bundle. -->
+        <service id="auth_note.route_loader" class="%auth_note.route_loader.class%">
+            <tag name="routing.loader" />   
+        </service>
+        
+        <!-- UserFactory and User services for the SimpleAuth classes. -->
+        <service id="auth_note.user_factory" class="%auth_note.user_factory.class%">
+            <argument type="service" id="security.context" />
+            <argument type="service" id="fos_user.user_manager" />
+        </service>
+        
+        <service 
+            id="auth_note.user" 
+            class="%auth_note.user.class%"
+            factory-service="auth_note.user_factory"
+            factory-method="getUser">
+        </service>
+        
+        <!-- SimpleAuth Service Configuration -->
+        <service id="auth_note.auth_decisions.object_decision" class="%auth_note.auth_decisions.object_decision.class%" />
+        <service id="auth_note.auth_decisions.string_decision" class="%auth_note.auth_decisions.string_decision.class%" />
+        
+        <service id="auth_note.auth_manager" class="%auth_note.auth_manager.class%">
+            <call method="addDecision">
+                <argument type="service" id="auth_note.auth_decisions.object_decision" />
+            </call>
+            <call method="addDecision">
+                <argument type="service" id="auth_note.auth_decisions.string_decision" />
+            </call>
+        </service>
+        
+        <service id="auth_note.auth_context" class="%auth_note.auth_context.class%" >
+            <argument type="service" id="auth_note.auth_manager" />
+            <argument type="service" id="auth_note.user" />
+        </service>
+    </services>
+</container>

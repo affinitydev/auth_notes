@@ -1,0 +1,3 @@
+AuthNoteBundle_Loader:
+    resource: .
+    type: auth_note_route_loader
